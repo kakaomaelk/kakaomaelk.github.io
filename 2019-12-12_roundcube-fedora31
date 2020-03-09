@@ -1,0 +1,117 @@
+Roundcube på Fedora 31 Server install log
+
+https://lintut.com/install-roundcube-webmail-software-on-centos-rhel-fedora/
+
+Apache+mysql version:
+sudo dnf install httpd php php-common php-json php-xml php-mbstring php-imap php-pear-DB php-mysqli php-intl php-ldap php-gd php-imagick php-zip php-pear-Auth-SASL php-pear-Net-SMTP php-pear-Net-IDNA2 php-pear-Mail-Mime php-kolab-net-ldap3 mysql mysql-server postfix dovecot composer certbot certbot-apache
+
+Nginx + postgrsql version
+sudo dnf install nginx php php-common php-json php-xml php-mbstring php-imap php-pear-DB php-pgsql php-intl php-ldap php-gd php-imagick php-zip php-pear-Auth-SASL php-pear-Net-SMTP php-pear-Net-IDNA2 php-pear-Mail-Mime php-kolab-net-ldap3 postgresql-server postgresql-contrib postfix dovecot composer certbot certbot-nginx
+
+
+
+wget https://github.com/roundcube/roundcubemail/releases/download/1.4.1/roundcubemail-1.4.1.tar.gz
+
+tar zxvf roundcubemail-1.4.1.tar.gz
+
+sudo mv roundcubemail-1.4.1 /var/www/html/roundcubemail
+
+sudo chown -R apache:apache /var/www/html/roundcubemail
+
+start database:
+
+sudo systemctl start mariadb.service
+
+Create database user:
+sudo mysql -uroot
+CREATE DATABASE roundcubemail /*!40101 CHARACTER SET utf8 COLLATE utf8_general_ci */;
+GRANT ALL PRIVILEGES ON roundcubemail.* TO roundcube@localhost IDENTIFIED BY 'password';
+
+Start httpd server
+sudo systemctl start httpd
+
+Åbne for 80 og 443 i firewall
+sudo firewall-cmd --add-service={http,https} --permanent
+sudo firewall-cmd --reload
+
+Start php-fpm
+sudo systemctl start php-fpm
+
+Husk at sætte tidszone i PHP
+
+Accepter standard rouncdube indstillinger
+
+Installer javascript stuff
+cd /var/www/html/roundcubemail
+sudo ./bin/install-jsdeps.sh
+
+Fjern eller deaktiver installer
+sudo chmod -R 000 /var/www/html/roundcubemail/installer/
+
+Composer klar:
+sudo cp composer.json-dist composer.json
+
+Installer composer
+sudo composer install --no-dev
+
+Sæt dovecot til at vide hvor mail er. Ret "mail_location" til som anvist, fx
+sudo nano /etc/dovecot/conf.d/10-mail.conf
+
+mail_location = maildir:~/Maildir
+
+Aktiver port 587 i postfix ( https://www.faqforge.com/linux/how-to-enable-port-587-submission-in-postfix/ ):
+sudo nano /etc/postfix/master.cf
+
+Udkommenter linje med submission inet n - n --smtpd
+
+Genstart postfix
+
+
+SELinux indstilling, som måske er krævet?
+ - sudo setsebool -P httpd_enable_cgi=1
+
+
+Nice: Tjek porte:
+sudo netstat -lntp
+
+Nice, tjek postfix log
+journalctl -u postfix
+
+!!! Er cockpit overhovdet sikker? kakaomaelk.dk har den på admin.kakaomaelk.dk, men dur det? Er sikkerheden ok? !!!
+
+Nice: Fjern cockpit port fra firewall, https://ask.fedoraproject.org/t/cockpit-lockdown/1471/2
+sudo firewall-cmd --permanent --zone=FedoraServer --remove-service=cockpit
+
+Nice: Gør så Cockpit ikke kan forbinde til andre servere:
+https://cockpit-project.org/guide/latest/cockpit.conf.5.html
+Lav cockpit.conf filen og følg guiden.
+
+Bemærk: Laptop er sat op, og har tilføjet SE-linux regler som cockpit har forslået.
+
+TODO:
+ - Opsæt rigtig ssl med lets encrypt. Domæne: mailtest.8r.dk
+ - Test mails kan sendes og modtage
+ - Sikre at port 25 relay kun accepterer mails til @kakaomaelk.dk
+ - spamfilter? https://www.linuxbabe.com/mail-server/block-email-spam-postfix
+ - PHP Tidszone
+ - Postfix port 587, login med kode skal være krævet!
+ - SELinux indstillinger, Har slået selinux fra nu for at kunne køre installationen.
+ - Lad vær med at køre composer som root
+ - HTTPS
+ - Domæne som mail.kakaomaelk.dk, istedet for 192.168.1.140/roundcubemail
+ - DKIM sættes op for postfix
+ - Roundcube kan ikke sende mails pga SMTP Error (250): Authentication failed. https://bobcares.com/blog/roundcube-smtp-error-250-authentication-failed/
+ - Kør lynis audit på systemet når jeg færdig.
+ - postfix + dovecov fail2ban
+ - SMTP accepter kun TLS forbindelser, INTET uden kryptering - må hjælpe LIDT på spam
+
+første forsøg fejlede, nok pga certifikat problemer
+ - installer letsencrypt tidligt i proccessen så tjenesterne har tillid på plads.
+ - Skyld ud og start forfra: Prøv med nginx + postgresql istedet for apache+mysql.
+ - nginx har TLS1.3 + kan nok få brotli til at virke! - brotli skal dog ikke være et krav
+ - postgresql har data integrity ting som nok er nice
+ -
+
+Bemærk ang eksterne services: Mailgun/Sendgrid/Eksternt spamfilter - Alt sammen muligt, men nu gør jeg ikke det her for det skal være nemt. Kunne lade vær med at gøre noget i det hele taget. Jeg gør det fordi jeg kan og jeg vil sætte en mailserver op fra bunden med SELinux som sikre den. Fedora er så foran med SELinux og modsat CentOS up-to-date med state of the art linux kernel. Det er CentOS ikke. Det lækkert. Jeg VIL gerne have det til at køre om end ikke andet så for at få større indblik i hvordan det fungerer! og evt blive klar til Zimbra eller lign alternativ til PF!
+    TL;DR: Det sjovt! Gør det fordi det sjovt!
+
