@@ -14,3 +14,18 @@ is nginx config
 See
 
     2019-12-12_roundcube-fedora31
+
+
+stuff to remember
+
+    sudo net-snmp-create-v3-user -ro -A userPWD -a SHA -X cryptPWD -x AES ek
+    firewall-cmd --add-rich-rule='rule family="ipv4" source address="82.211.192.0/19" service name="snmp" accept' --permanent
+
+https://www.reddit.com/r/sysadmin/comments/2rjhh0/firewalld_question_how_to_add_source_ip_for/
+
+snmp monitor with v3 user and code, limited access only from k-net
+
+Test SNMP
+    snmpwalk -v3 -l authNoPriv -u ek -a SHA -A "userPWD" -x AES -X "cryptPWD" 82.211.200.6
+
+https://www.linickx.com/snmpwalk-v3-and-snmpget-v3-examples
