@@ -33,6 +33,14 @@ https://fedoraproject.org/wiki/AutoUpdates
     vi /etc/dnf/automatic.conf
     systemctl enable --now dnf-automatic.timer
 
+## SSH
+
+Only allow login by certiciate
+
+    sudo vi /etc/ssh/sshd_config
+
+https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/
+
 # SELinux
 
 In case of issues with nginx
@@ -91,6 +99,8 @@ Also remember to turn off sleep upon lid close ( https://wiki.amahi.org/index.ph
     vi /etc/systemd/logind.conf
 
 The hardware for Wifi was removed on April 30, 2020, since it is not required to run kakaomaelk.dk
+
+SSD instead of HDD installed on May 5, 2020.
 
 # Pictures
 
