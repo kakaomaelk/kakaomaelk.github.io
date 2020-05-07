@@ -52,6 +52,10 @@ ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDS
 		try_files $uri $uri/ =404;
 	}
 
+        location ~* ^.+\.(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|rss|atom|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf|pdf)$ {
+                expires max;
+        }
+
 	location ~ \.php$ {
 		deny all;
 	}
