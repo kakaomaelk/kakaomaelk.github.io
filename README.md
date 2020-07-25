@@ -13,9 +13,15 @@ is nginx config
 
 Packages required:
 
-    dnf install nginx dnf-automatic net-snmp-utils net-snmp git certbot certbot-nginx
+    dnf install nginx dnf-automatic net-snmp-utils net-snmp git certbot certbot-nginx cronie
 
 ## Certbot autorenew
+
+Remember to install cronie. Included in the commands above. Documentation: https://docs.fedoraproject.org/en-US/fedora/f31/system-administrators-guide/monitoring-and-automation/Automating_System_Tasks/#sect-Cron-Installing
+
+Enable cronie
+
+    systemctl enable crond
 
 Remember to add crontab job:
 
