@@ -27,6 +27,14 @@ Remember to add crontab job:
 
     echo "0 0,12 * * * root python -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
 
+Alternative is renew timers:
+
+    systemctl enable --now certbot-renew.timer
+
+More about Certbot on Fedora:
+- https://fedoramagazine.org/secure-your-webserver-improved-certbot/
+- https://stevenwestmoreland.com/2017/11/renewing-certbot-certificates-using-a-systemd-timer.html
+
 ## Enable nginx
 
     systemctl enable nginx
